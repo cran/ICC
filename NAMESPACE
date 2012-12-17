@@ -1,5 +1,2 @@
-# Default NAMESPACE created by R
-# Remove the previous line if you edit this file
+export(ICCest, effort, ICCbare, ICCbareF, Nest)
 
-# Export all names
-exportPattern(".")
