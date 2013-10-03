@@ -22,7 +22,7 @@ ICCbare<-function(x, y, data){
    r<-var.a/(var.a+MS[2])
       }
   else{
-     tmpbb<-anova.lm(aov(fmla, data=tdata))
+     tmpbb<-anova(aov(fmla, data=tdata))
      MSa<-tmpbb[3][1,1]
      tmp.outj<-data.frame(lapply(unstack(na.omit(tdata)), FUN=length))
      var.a<-(MSa-tmpbb[3][2,1])/((1/(length(inds)-1))*(sum(tmp.outj)-(sum((tmp.outj^2))/(sum(tmp.outj)))))

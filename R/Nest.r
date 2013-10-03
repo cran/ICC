@@ -27,7 +27,7 @@ n.est.table
   if(!is.factor(tdata[,2])){
     tdata[,2]<-as.factor(tdata[,2])
     }  
-  tmpbb<-anova.lm(aov(tdata[,1]~tdata[,2], data=tdata))
+  tmpbb<-anova(aov(tdata[,1]~tdata[,2], data=tdata))
   num.df<-tmpbb[1][1,1]
   denom.df<-tmpbb[1][2,1];
   MSa<-tmpbb[3][1,1]

@@ -30,7 +30,7 @@ ICCest<-function(x, y, data=data, alpha=0.05, CI.type=c("THD", "Smith"))
 	tdata <- tdata[!tdata[,2] == which(unlist(TF) == FALSE), ]
   }
 
-  tmpbb<-anova.lm(aov(tdata[,1]~tdata[,2], data=tdata))
+  tmpbb<-anova(aov(tdata[,1]~tdata[,2], data=tdata))
   num.df<-tmpbb[1][1,1]
   denom.df<-tmpbb[1][2,1];
   MSa<-tmpbb[3][1,1]
