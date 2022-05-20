@@ -1,5 +1,7 @@
-ICCest <- function(x, y, data = NULL, alpha = 0.05, CI.type = c("THD", "Smith")){
-  square <- function(z){z^2}
+#' @rdname ICCest
+#' @export
+#' @importFrom stats aggregate anova aov formula na.omit replications 
+ICCbare <- function(x, y, data = NULL){
   icall <- list(y = substitute(y), x = substitute(x))
 
   if(is.character(icall$y)){
@@ -39,35 +41,23 @@ ICCest <- function(x, y, data = NULL, alpha = 0.05, CI.type = c("THD", "Smith"))
        } 
     } 
 
-  tmpbb <- anova(aov(y ~ x, data = tdata))
-  num.df <- tmpbb$Df[1]
-  denom.df <- tmpbb$Df[2]
-  MSa <- tmpbb$'Mean Sq'[1]
-  MSw <- var.w <- tmpbb$'Mean Sq'[2]
-  tmp.outj <- aggregate(y ~ x, data = tdata, FUN = length)$y
-  k <- (1/(a-1)) * (sum(tmp.outj) - (sum(square(tmp.outj)) / sum(tmp.outj)))
-  var.a <- (MSa - MSw) / k
-  r <- var.a / (var.w + var.a)
-
-  low.F <- qf(alpha/2, num.df, denom.df, lower.tail = FALSE)
-  N <- nrow(tdata)
-  n.bar <- N/a
-  n.not <- n.bar - sum(square(tmp.outj - n.bar) / ((a - 1) * N))	
-    type <- match.arg(CI.type)
-      if(type == "THD"){
-	up.F <- qf(alpha/2, denom.df, num.df, lower.tail = FALSE)	
-	FL <- (MSa/MSw) / low.F
-	FU <- (MSa/MSw) * up.F
-	low.CI <- (FL - 1) / (FL + n.not - 1)
-	up.CI <- (FU - 1) / (FU + n.not - 1)
-       }
-      if(type == "Smith"){
-	z.not <- qnorm(alpha/2)
-	Vr <- (2*square(1-r) / square(n.not)) * ((square((1+r*(n.not-1))) / (N-a)) + ((a-1)*(1-r)*(1+r*(2*n.not-1))+square(r)*(sum(square(tmp.outj))-2*(1/N)*sum((tmp.outj^3))+(1/square(N))*square(sum(square(tmp.outj)))))/ square(a-1))
-	low.CI <- r + z.not * sqrt(Vr)
-	up.CI <- r - z.not * sqrt(Vr) 
-      }
-
-list(ICC = r, LowerCI = low.CI, UpperCI = up.CI, N = a, k = k, varw = var.w, vara = var.a)
+  fmla <- formula(tdata)
+  if (!is.list(replications(fmla, tdata))){
+   tmp1 <- aggregate(tdata[, 1], list(tdata[, 2]), FUN = mean)
+   tmp2 <- aggregate(tdata[, 1], list(tdata[, 2]), FUN = length)
+   ord.data <- tdata[order(tdata[, 2]),]
+   Treat.m <- rep(tmp1$x, tmp2$x)
+   Among <- (Treat.m - rep(mean(tdata[, 1]), nrow(tdata)))^2
+   Within <- (ord.data[, 1] - Treat.m)^2
+   MS <- c(sum(Among), sum(Within)) / c(length(tmp2$x) - 1, length(tmp2$x) * (tmp2$x[1]-1))
+   var.a <- (MS[1] - MS[2]) / tmp2$x[1]
+  return(var.a / (var.a + MS[2]))
+  } else{
+     tmpbb <- anova(aov(fmla, data = tdata))
+     MSa <- tmpbb[3][1, 1]
+     tmp.outj <- aggregate(y ~ x, data = tdata, FUN = length)$y
+     var.a <- (MSa - tmpbb[3][2, 1]) /((1 / (a - 1)) * (sum(tmp.outj) - (sum(tmp.outj^2) / sum(tmp.outj))))
+    return(var.a / (tmpbb[3][2,1] + var.a))
+    }
 }
 
